@@ -2,6 +2,14 @@
 #include <vector>
 #include <string>
 
+#define HTML_TAG_FOREACH_BEGIN(...) [&]() -> std::vector<htmlTag>{std::vector<htmlTag> ____________dontuse_tags; for(__VA_ARGS__){____________dontuse_tags = ____________dontuse_tags+[&]() -> std::vector<htmlTag>
+#define HTML_TAG_FOREACH_END ();}return ____________dontuse_tags;}()
+
+
+enum TagType{
+	TAG_TYPE_ELEM,
+	TAG_TYPE_VALUE
+};
 
 /**
  * @brief html構造のtag情報を管理します
@@ -10,12 +18,13 @@
 class htmlTag
 {
 protected:
+	TagType type;
 	std::string tag;
 	std::string option;
 
 	std::vector<htmlTag> children;
 public:
-	htmlTag() noexcept:tag(),option(),children(){};
+	htmlTag() noexcept:tag(),option(),children(),type(){};
 	htmlTag(const htmlTag& other) noexcept;
 	htmlTag(htmlTag&& other) noexcept;
 	htmlTag(const std::string& tag,const std::string& option) noexcept;
@@ -24,7 +33,7 @@ public:
 	htmlTag(std::string&& tag,std::string&& option,std::vector<htmlTag> children) noexcept;
 	~htmlTag() noexcept;
 
-	bool isNotTag() const {return tag.empty();}
+	TagType getTagType() const {return this->type;}
 	std::string encord() const;
 	
 	operator std::vector<htmlTag>() const{return std::vector<htmlTag>{*this};}
@@ -46,10 +55,11 @@ public:
 	htmlVal(const std::string& text) noexcept;
 	htmlVal(std::string&& text) noexcept;
 	htmlVal& operator=(htmlVal&& other) noexcept;
-	std::vector<htmlTag> operator+(htmlVal& right) noexcept;
-	std::vector<htmlTag> operator+(htmlVal&& right) noexcept;
+	std::vector<htmlTag> operator+(const htmlVal& right) const noexcept;
+	std::vector<htmlTag> operator+(htmlVal&& right) const noexcept;
 	~htmlVal() noexcept;
 };
+
 
 class htmlPage
 {
@@ -65,13 +75,16 @@ public:
 	void setBody(const htmlTag&& body) noexcept{this->body = std::move(body);}
 };
 
+std::vector<htmlTag> operator+(const std::vector<htmlTag>& left  ,std::vector<htmlTag>&& right) noexcept;
+std::vector<htmlTag>&& operator+(std::vector<htmlTag>&& left,std::vector<htmlTag>&& right) noexcept;
+
 std::vector<htmlTag> operator+(std::vector<htmlTag> left,const htmlTag& right) noexcept;
 std::vector<htmlTag> operator+(std::vector<htmlTag> left,htmlTag&& right) noexcept;
-std::vector<htmlTag> operator+(std::vector<htmlTag>&& left,const htmlTag& right) noexcept;
-std::vector<htmlTag> operator+(std::vector<htmlTag>&& left,htmlTag&& right) noexcept;
+std::vector<htmlTag>&& operator+(std::vector<htmlTag>&& left,const htmlTag& right) noexcept;
+std::vector<htmlTag>&& operator+(std::vector<htmlTag>&& left,htmlTag&& right) noexcept;
 
 std::vector<htmlTag> operator+(std::vector<htmlTag> left,const htmlVal& right) noexcept;
 std::vector<htmlTag> operator+(std::vector<htmlTag> left,htmlVal&& right) noexcept;
-std::vector<htmlTag> operator+(std::vector<htmlTag>&& left,const htmlVal& right) noexcept;
-std::vector<htmlTag> operator+(std::vector<htmlTag>&& left,htmlVal&& right) noexcept;
+std::vector<htmlTag>&& operator+(std::vector<htmlTag>&& left,const htmlVal& right) noexcept;
+std::vector<htmlTag>&& operator+(std::vector<htmlTag>&& left,htmlVal&& right) noexcept;
 
