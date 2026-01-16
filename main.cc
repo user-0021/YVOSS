@@ -18,7 +18,7 @@ int main() {
 				HtmlVal("hello")
 			)+
 			HtmlTag("h2","option1=2",
-				HtmlVal("world")
+				HtmlVal("world") + std::move(JsValue(100))
 			)+
 			HTML_TAG_FOREACH_BEGIN(int i = 0;i < 10;i++){
 				return 	HtmlTag("h2","option1=2",
@@ -28,6 +28,7 @@ int main() {
 			HTML_TAG_FOREACH_END
 		)
 	);
+	
 
 	//bind web page
 	drogon::app()
