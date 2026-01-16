@@ -266,6 +266,12 @@ std::vector<HtmlTag> HtmlVal::operator+(HtmlVal&& right) const noexcept{
  * *****************************
  */
 
+ 
+ExprNode* createNode(const JsValue& v);
+ExprNode* createNode(ExprNode& left,ExprNode& right,const NodeType& type);
+ExprNode* copyNode(ExprNode& node);
+void deleteNode(ExprNode* node) noexcept;
+
 
 // 静的リソースのコピー
 void* JsValue::copyStaticResource() const noexcept{
@@ -300,37 +306,11 @@ void JsValue::releaseResource() noexcept{
 			break;
 		}
 	}else{
-		this->deleteNode(this->node);
+		deleteNode(this->node);
 	}
 }
 
-void JsValue::deleteNode(const ExprNode* node) noexcept{
-	//deleate
-	if(node != nullptr){
-		if(node->type != NodeType::NODE_VALUE){
-			//if node
-			this->deleteNode((ExprNode*)node->left);
-			this->deleteNode((ExprNode*)node->right);
-		}else{
-			//if JsValue
-			delete (JsValue*)node->left;
-		}
-	}
-	delete node;
-}
 
-// ノードコピー
-ExprNode* JsValue::copyNode(const ExprNode& node) const{
-	if(node.type == NodeType::NODE_VALUE){
-		return new ExprNode(node);
-	}else{
-		ExprNode newNode;
-		newNode.type = node.type;
-		newNode.left = JsValue::copyNode(*(ExprNode*)node.left);
-		newNode.right = JsValue::copyNode(*(ExprNode*)node.right);
-		return new ExprNode(newNode);
-	}
-}
 
 //コピー初期化
 JsValue::JsValue(const JsValue& other):
@@ -351,30 +331,26 @@ JsValue::JsValue(const JsValue& left,const JsValue& right,const NodeType& nodeTy
 	isStatic(false),
 	staticValue(nullptr),
 	valueType(left.valueType){
-		
-	ExprNode* newNode = new ExprNode;
-	//set type
-	newNode->type = nodeType;
+	
+	// create new node param
+	ExprNode* newNode_left;
+	ExprNode* newNode_right;
 
 	//set left
 	if(left.isStatic){
-		newNode->left = new ExprNode;
-		((ExprNode*)newNode->left)->type = NodeType::NODE_VALUE;
-		((ExprNode*)newNode->left)->left = new JsValue(left);
+		newNode_left = createNode(left);
 	}else{
-		newNode->left = JsValue::copyNode(*left.node);
+		newNode_left = left.node;
 	}
 	
 	//set right
 	if(right.isStatic){
-		newNode->right = new ExprNode;
-		((ExprNode*)newNode->right)->type = NodeType::NODE_VALUE;
-		((ExprNode*)newNode->right)->left = new JsValue(right);
+		newNode_right = createNode(right);
 	}else{
-		newNode->right = JsValue::copyNode(*right.node);
+		newNode_right = right.node;
 	}
 
-	this->node = newNode;
+	this->node = createNode(*newNode_left,*newNode_right,nodeType);
 }
 //JsValue::JsValue(const JsValue& left,JsValue&&      right);
 //JsValue::JsValue(JsValue&&      left,const JsValue& right);
@@ -410,19 +386,21 @@ JsValue::~JsValue(){
 }
 
 // 代入
-JsValue JsValue::operator=(const JsValue& right) noexcept{
+JsValue& JsValue::operator=(const JsValue& right) noexcept{
 	this->releaseResource();
 	this->valueType = right.valueType;
 
 	if(right.isStatic){
 		this->staticValue = right.copyStaticResource();
 	}else{
-		this->node = new ExprNode(*right.node);
+		this->node = copyNode(*right.node);
 	}
+
+	return *this;
 }
 
 // ムーブ代入
-JsValue JsValue::operator=(JsValue&& right) noexcept{
+JsValue& JsValue::operator=(JsValue&& right) noexcept{
 	this->releaseResource();
 	this->valueType = std::move(right.valueType);
 
@@ -433,6 +411,8 @@ JsValue JsValue::operator=(JsValue&& right) noexcept{
 		this->node = std::move(right.node);
 		right.node = nullptr;
 	}
+	
+	return *this;
 }
 
 ///////// 演算子
@@ -479,6 +459,8 @@ JsValue JsValue::operator+(const JsValue& right) const{
 	}else{
 		return JsValue(*this,right,NodeType::NODE_ADD);
 	}
+
+	return JsValue("operator+ failed");
 }
 
 JsValue JsValue::operator-(const JsValue& right) const{
@@ -519,6 +501,8 @@ JsValue JsValue::operator-(const JsValue& right) const{
 	}else{
 		return JsValue(*this,right,NodeType::NODE_SUB);
 	}
+	
+	return JsValue("operator- failed");
 }
 
 JsValue JsValue::operator*(const JsValue& right) const{
@@ -559,6 +543,8 @@ JsValue JsValue::operator*(const JsValue& right) const{
 	}else{
 		return JsValue(*this,right,NodeType::NODE_MUL);
 	}
+
+	return JsValue("operator* failed");
 }
 
 JsValue JsValue::operator/(const JsValue& right) const{
@@ -599,4 +585,67 @@ JsValue JsValue::operator/(const JsValue& right) const{
 	}else{
 		return JsValue(*this,right,NodeType::NODE_DIV);
 	}
+	
+	return JsValue("operator/ failed");
+}
+
+
+
+///// helper
+
+ExprNode* createNode(const JsValue& v){
+	//create
+	ExprNode* newNode = new ExprNode;
+	newNode->refCount++;
+	newNode->type = NodeType::NODE_VALUE;
+
+	//set brunch
+	newNode->left = new JsValue(v);
+
+	return newNode;
+}
+
+ExprNode* createNode(ExprNode& left,ExprNode& right,const NodeType& type){
+	//create
+	ExprNode* newNode = new ExprNode;
+	newNode->refCount++;
+	newNode->type = type;
+
+	//set brunch
+	newNode->left = copyNode(left);
+	newNode->right = copyNode(right);
+
+	return newNode;
+}
+
+// ノードコピー
+ExprNode* copyNode(ExprNode& node){
+	if(node.type != NodeType::NODE_VALUE){
+		copyNode(*(ExprNode*)node.left);
+		copyNode(*(ExprNode*)node.right);
+	}
+	
+	//copy
+	node.refCount++;
+	return &node;
+}
+
+//　ノード削除
+void deleteNode(ExprNode* node) noexcept{
+	//deleate
+	if(node != nullptr){
+		if(node->type != NodeType::NODE_VALUE){
+			//if node
+			deleteNode((ExprNode*)node->left);
+			deleteNode((ExprNode*)node->right);
+		}else{
+			//if JsValue
+			delete (JsValue*)node->left;
+		}
+	}
+
+	//ref dec
+	node->refCount--;
+	if(!node->refCount)
+		delete node;
 }

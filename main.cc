@@ -7,22 +7,22 @@
 int main() {
 
 
-	htmlPage mainPage;
+	HtmlPage mainPage;
 	mainPage.setHead(
-		htmlTag("head",""
+		HtmlTag("head",""
 		)
 	);
 	mainPage.setBody(
-		htmlTag("body","option1=1",
-			htmlTag("h1","option1=2",
-				htmlVal("hello")
+		HtmlTag("body","option1=1",
+			HtmlTag("h1","option1=2",
+				HtmlVal("hello")
 			)+
-			htmlTag("h2","option1=2",
-				htmlVal("world")
+			HtmlTag("h2","option1=2",
+				HtmlVal("world")
 			)+
 			HTML_TAG_FOREACH_BEGIN(int i = 0;i < 10;i++){
-				return 	htmlTag("h2","option1=2",
-									htmlVal("world" + std::to_string(i))
+				return 	HtmlTag("h2","option1=2",
+									HtmlVal("world" + std::to_string(i))
 								);
 			}
 			HTML_TAG_FOREACH_END

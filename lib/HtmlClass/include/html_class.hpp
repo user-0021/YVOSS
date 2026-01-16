@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <stdint.h>
 
 #define HTML_TAG_FOREACH_BEGIN(...) [&]() -> std::vector<HtmlTag>{std::vector<HtmlTag> ____________dontuse_tags; for(__VA_ARGS__){____________dontuse_tags = ____________dontuse_tags+[&]() -> std::vector<HtmlTag>
 #define HTML_TAG_FOREACH_END ();}return ____________dontuse_tags;}()
@@ -45,6 +46,7 @@ protected:
 	std::string option;
 
 	std::vector<HtmlTag> children;
+	std::unique_ptr<JsValue> jsValues;
 public:
 	HtmlTag() noexcept:tag(),option(),children(),type(){};
 	HtmlTag(const HtmlTag& other) noexcept;
@@ -114,6 +116,7 @@ enum NodeType{
 
 struct ExprNode
 {
+	uint16_t refCount;
 	const void* left;
 	const void* right;
 	NodeType type;
@@ -134,8 +137,6 @@ protected:
 
 	void* copyStaticResource() const noexcept; 
 	void releaseResource() noexcept;
-	void deleteNode(const ExprNode* node) noexcept;
-	ExprNode* copyNode(const ExprNode& node) const;
 
 public:
 	JsValue(const JsValue& other);
@@ -150,8 +151,8 @@ public:
 
 	~JsValue();
 
-	JsValue operator=(const JsValue& right) noexcept;
-	JsValue operator=(JsValue&& right) noexcept;
+	JsValue& operator=(const JsValue& right) noexcept;
+	JsValue& operator=(JsValue&& right) noexcept;
 	JsValue operator+(const JsValue& right) const;
 	JsValue operator-(const JsValue& right) const;
 	JsValue operator*(const JsValue& right) const;
