@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 enum JsValueType{
 	JS_INT    = 0,
@@ -31,7 +32,6 @@ struct ExprNode
 struct JsFunctionNode{
 	ExprNode node;
 	std::string funcName;
-	std::vector<JsValue> args;
 	std::string jsCode;
 };
 
@@ -40,47 +40,20 @@ class JsValue{
 protected:
 	//state	
 	bool isStatic;
-	JsValueType valueType; 
-	
-	//for static value
-	void* staticValue;
 
 	//dor dynamic
 	ExprNode* node; 
 
-	std::string asString() const;
+	//copy node
+	ExprNode* setNode(ExprNode& node);
+	ExprNode* setNode(ExprNode&& node);
 
-	void* copyStaticResource() const noexcept; 
-	void releaseResource() noexcept;
 
 public:
+	JsValue():node(nullptr){};
 	JsValue(const JsValue& other);
 	JsValue(JsValue&& other);
-	JsValue(const JsValue& left,const JsValue& right,const NodeType& nodeType);
-	JsValue(const std::string& s);
-	JsValue(const int& i);
-	JsValue(const double& d);
+	JsValue(ExprNode* left,ExprNode* right,NodeType type);
 
 	~JsValue();
-
-	std::string encord() const;
-
-	JsValue& operator=(const JsValue& right) noexcept;
-	JsValue& operator=(JsValue&& right) noexcept;
-	JsValue operator+(const JsValue& right) const;
-	JsValue operator-(const JsValue& right) const;
-	JsValue operator*(const JsValue& right) const;
-	JsValue operator/(const JsValue& right) const;
 };
-
-// int class
-class JsInt: JsValue{
-	public:
-};
-
-// string class
-class JsString: JsValue{
-	public:
-		static JsValue fromCharCode(std::vector<JsInt> args);
-};
-
