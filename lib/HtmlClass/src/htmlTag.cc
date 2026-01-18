@@ -163,7 +163,7 @@ HtmlTag& HtmlTag::operator=(HtmlTag&& other) noexcept{
 }
 
 //リストの連結
-std::vector<HtmlTag> HtmlTag::operator+(HtmlTag& right) noexcept{
+std::vector<HtmlTag> HtmlTag::operator+(HtmlTag& right) const noexcept{
 	std::vector<HtmlTag> res;
 	
 	if(this->getTagType() == TagType::TAG_TYPE_ELEM)
@@ -175,7 +175,7 @@ std::vector<HtmlTag> HtmlTag::operator+(HtmlTag& right) noexcept{
 }
 
 //リストの連結
-std::vector<HtmlTag> HtmlTag::operator+(HtmlTag&& right) noexcept{
+std::vector<HtmlTag> HtmlTag::operator+(HtmlTag&& right) const noexcept{
 	std::vector<HtmlTag> res;
 	
 	if(this->getTagType() == TagType::TAG_TYPE_ELEM)

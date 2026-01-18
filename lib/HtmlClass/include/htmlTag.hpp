@@ -50,6 +50,6 @@ public:
 	operator std::vector<HtmlTag>() const{return std::vector<HtmlTag>{*this};}
 	HtmlTag& operator=(const HtmlTag& other) noexcept;
 	HtmlTag& operator=(HtmlTag&& other) noexcept;
-	std::vector<HtmlTag> operator+(HtmlTag& right) noexcept;
-	std::vector<HtmlTag> operator+(HtmlTag&& right) noexcept;
+	std::vector<HtmlTag> operator+(HtmlTag& right) const noexcept;
+	std::vector<HtmlTag> operator+(HtmlTag&& right) const noexcept;
 };
