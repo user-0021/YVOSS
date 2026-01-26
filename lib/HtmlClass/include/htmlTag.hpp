@@ -2,7 +2,8 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include <jsValue.hpp>
+
+class HtmlTag;
 
 #define HTML_TAG_FOREACH_BEGIN(...) [&]() -> std::vector<HtmlTag>{std::vector<HtmlTag> ____________dontuse_tags; for(__VA_ARGS__){____________dontuse_tags = ____________dontuse_tags+[&]() -> std::vector<HtmlTag>
 #define HTML_TAG_FOREACH_END ();}return ____________dontuse_tags;}()
@@ -33,7 +34,6 @@ protected:
 	std::string option;
 
 	std::vector<HtmlTag> children;
-	std::unique_ptr<JsValue> jsValues;
 public:
 	HtmlTag() noexcept:tag(),option(),children(),type(){};
 	HtmlTag(const HtmlTag& other) noexcept;

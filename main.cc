@@ -18,7 +18,7 @@ int main() {
 				HtmlVal("hello")
 			)+
 			HtmlTag("h2","option1=2",
-				HtmlVal("world") + std::move(JsValue(100))
+				HtmlVal("world" + std::to_string(100))
 			)+
 			HTML_TAG_FOREACH_BEGIN(int i = 0;i < 10;i++){
 				return 	HtmlTag("h2","option1=2",
@@ -38,7 +38,25 @@ int main() {
 				resp->setStatusCode(drogon::k200OK);
 				resp->setContentTypeCode(drogon::CT_TEXT_HTML);
 				resp->setBody(
-					mainPage.encord()
+					//mainPage.encord()
+					HtmlTag("","",
+						HtmlTag("head",""
+						)+
+						HtmlTag("body","option1=1",
+							HtmlTag("h1","option1=2",
+								HtmlVal("hello")
+							)+
+							HtmlTag("h2","option1=2",
+								HtmlVal("world" + std::to_string(100))
+							)+
+							HTML_TAG_FOREACH_BEGIN(int i = 0;i < 10;i++){
+								return 	HtmlTag("h2","option1=2",
+													HtmlVal("world" + std::to_string(i))
+												);
+							}
+							HTML_TAG_FOREACH_END
+						)
+					).encord()
 				);
 
 				callback(resp);

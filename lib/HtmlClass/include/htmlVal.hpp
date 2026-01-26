@@ -2,7 +2,8 @@
 #include <string>
 #include <vector>
 #include <htmlTag.hpp>
-#include <jsValue.hpp>
+
+class HtmlVal;
 
 std::vector<HtmlTag> operator+(std::vector<HtmlTag> left,const HtmlVal& right) noexcept;
 std::vector<HtmlTag> operator+(std::vector<HtmlTag> left,HtmlVal&& right) noexcept;
@@ -20,10 +21,8 @@ public:
 	HtmlVal(HtmlVal&& other) noexcept;
 	HtmlVal(const std::string& text) noexcept;
 	HtmlVal(std::string&& text) noexcept;
-	HtmlVal(const JsValue& jsValue) noexcept;
-	HtmlVal(JsValue&& jsValue) noexcept;
 	HtmlVal& operator=(HtmlVal&& other) noexcept;
-	std::vector<HtmlTag> operator+(const HtmlVal& right) const noexcept;
-	std::vector<HtmlTag> operator+(HtmlVal&& right) const noexcept;
+	HtmlVal operator+(const HtmlVal& right) const noexcept;
+	HtmlVal operator+(HtmlVal&& right) const noexcept;
 	~HtmlVal() noexcept;
 };

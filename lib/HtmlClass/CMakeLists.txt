@@ -1,6 +1,6 @@
 # ライブラリ名を定義
 add_library(HTML_CLASS STATIC 
-    src/html_class.cc
+    src/htmlPage.cc src/htmlTag.cc src/htmlVal.cc
 )
 
 target_include_directories(HTML_CLASS PUBLIC include)

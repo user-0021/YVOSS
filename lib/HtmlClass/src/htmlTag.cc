@@ -51,11 +51,7 @@ HtmlTag::HtmlTag(const HtmlTag& other) noexcept
 	:tag(other.tag),
 	option(other.option),
 	children(other.children),
-	jsValues(nullptr),
 	type(other.type){
-		if(other.jsValues){
-			this->jsValues = std::unique_ptr<JsValue>(new JsValue(*other.jsValues.get()));
-		}
 	};
 
 //ムーブ初期化
@@ -63,7 +59,6 @@ HtmlTag::HtmlTag(HtmlTag&& other) noexcept
 	:tag(std::move(other.tag)),
 	option(std::move(other.option)),
 	children(std::move(other.children)),
-	jsValues(std::move(other.jsValues)),
 	type(std::move(other.type)){};
 
 //子なし初期化
@@ -110,17 +105,19 @@ HtmlTag::~HtmlTag() noexcept{
 std::string HtmlTag::encord() const{
 	std::string ret("");
 	if(this->getTagType() == TagType::TAG_TYPE_VALUE){
-		if(this->jsValues){
-			ret += this->jsValues.get()->encord();
-		}else{
-			ret += this->option;
-		}
+		ret += this->option;
 	}else{
-		ret += "<" + this->tag + this->option + ">";
-		for(const auto& element : this->children){
-			ret += element.encord();
+		if(this->tag.empty()){
+			for(const auto& element : this->children){
+				ret += element.encord();
+			}
+		}else{
+			ret += "<" + this->tag + this->option + ">";
+			for(const auto& element : this->children){
+				ret += element.encord();
+			}
+			ret += "</" + this->tag + ">";
 		}
-		ret += "</" + this->tag + ">";
 	}
 	return ret;
 }
@@ -128,21 +125,11 @@ std::string HtmlTag::encord() const{
 //代入演算
 HtmlTag& HtmlTag::operator=(const HtmlTag& other) noexcept{
 	if(this != &other){
-		//check release
-		if(this->jsValues){
-			this->jsValues.release();
-			this->jsValues = nullptr;
-		}
-
 		this->tag      = other.tag;
 		this->type     = other.type;
 		this->option   = other.option;
 		this->children = other.children;
 
-		// if need copy
-		if(other.jsValues){
-			this->jsValues = std::unique_ptr<JsValue>(new JsValue(*other.jsValues.get()));
-		}
 	}
 	return *this;
 }
@@ -150,14 +137,11 @@ HtmlTag& HtmlTag::operator=(const HtmlTag& other) noexcept{
 //ムーブ演算
 HtmlTag& HtmlTag::operator=(HtmlTag&& other) noexcept{
 	if(this != &other){
-		if(this->jsValues)
-			this->jsValues.release();
 
 		this->tag      = std::move(other.tag);
 		this->type     = std::move(other.type);
 		this->option   = std::move(other.option);
 		this->children = std::move(other.children);
-		this->jsValues = std::move(other.jsValues);
 	}
 	return *this;
 }
