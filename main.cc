@@ -1,8 +1,7 @@
 #include <drogon/drogon.h>
-#include <html_class.hpp>
 #include <iostream>
 
-#define HTTPS_CALLBACK [=](const drogon::HttpRequestPtr &req,std::function<void(const drogon::HttpResponsePtr &)> &&callback)
+#define HTTPS_CALLBACK [=](const drogon::HttpRequestPtr &req,drogon::AdviceCallback &&acb,drogon::AdviceChainCallback&& accb)
 
 int main() {
 	//bind web page
@@ -12,20 +11,35 @@ int main() {
 	//Load config file
 	drogon::app().loadConfigFile("../config.json");
 
-	//regist callback
-	drogon::app().registerHandler(".*",HTTPS_CALLBACK{
+	static const char* homePageRoute = "a";
+
+	//set route  fot React
+	drogon::app().registerPreRoutingAdvice(HTTPS_CALLBACK{
+		//request path
+		const std::string &path = req->path();
+		LOG_DEBUG << "CallPreRouting to " << path;
 
 		//api callback
-		if (req->path().find("/api/") == 0) {
-			auto resp = drogon::HttpResponse::newNotFoundResponse();
-			callback(resp);
+		if (path.compare(0, 5, "/api/") == 0) {
+			LOG_DEBUG << "ROOT to API ";
+			accb(); 
 			return;
-		}
+    }
+
+		//static resource
+		size_t last_slash = path.find_last_of('/');
+    size_t last_dot = path.find_last_of('.');
+		if (last_dot != std::string::npos && (last_slash == std::string::npos || last_dot > last_slash)) {
+			LOG_DEBUG << "ROOT to static";
+			accb();
+			return;
+    }
 
 		// webpage
-		printf("%s\r\n",drogon::app().getHomePage().c_str());
-		auto resp = drogon::HttpResponse::newFileResponse(drogon::app().getHomePage());
-		callback(resp);
+		LOG_DEBUG << "ROOT to homePage [" << drogon::app().getDocumentRoot()+drogon::app().getHomePage() <<"]";
+		auto resp = drogon::HttpResponse::newFileResponse(drogon::app().getDocumentRoot()+drogon::app().getHomePage());
+    resp->setStatusCode(drogon::k200OK);
+    acb(resp);
 	});
 
 	//drogon::app().loadConfigFile("../config.yaml");
