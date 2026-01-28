@@ -207,7 +207,7 @@ namespace html_class
 	//                                  Constractor and Destoractor
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	HtmlTag::HtmlTag(const HtmlTag& other):
+	inline HtmlTag::HtmlTag(const HtmlTag& other):
 	_isTag(   other._isTag),
 	_tag(     other._tag),
 	_option(  other._option),
@@ -216,7 +216,7 @@ namespace html_class
 		
 	}
 
-	HtmlTag::HtmlTag(HtmlTag&& other) noexcept:
+	inline HtmlTag::HtmlTag(HtmlTag&& other) noexcept:
 	_isTag   (std::move(other._isTag)),
 	_tag     (std::move(other._tag)),
 	_option  (std::move(other._option)),
@@ -224,46 +224,7 @@ namespace html_class
 	_children(std::move(other._children)){
 	}
 
-	HtmlTag::HtmlTag(std::string text):
-	_isTag   (false),
-	_tag     (),
-	_dataLen (),
-	_children(){
-
-		//count char to need escape
-		std::size_t copiedLen = 0;
-		for (char c : text){
-			if(HtmlTag::_htmlEscapeFlag[(unsigned char) c]) [[unlikely]] {
-				copiedLen += this->_htmlEscapeFlag[(unsigned char) c];
-			}
-		}
-
-		if (!copiedLen) [[likely]]{
-			// if don't escape
-			this->_option = std::move(text);
-		} else {
-			//reserve new text size
-			this->_option.reserve(text.size() + copiedLen);
-			
-			std::size_t lastPos = 0;
-			std::size_t escapePos = 0;
-			for (char c : text){
-				if(const char* replaceText = HtmlTag::_htmlEscapeStr[(unsigned char) c]) [[unlikely]] {
-					//if need escape
-					this->_option.append(text, lastPos, escapePos - lastPos);
-					this->_option.append(replaceText);
-					lastPos = escapePos + 1;
-				}
-				escapePos++;
-			}
-			this->_option.append(text, lastPos, std::string::npos);
-		}
-		
-		//update len
-		this->_dataLen = _option.length();
-}
-
-	HtmlTag::HtmlTag(std::string tag,std::string option):
+	inline HtmlTag::HtmlTag(std::string tag,std::string option):
 	_isTag   (true),
 	_tag     (std::move(tag)),
 	_option  (std::move(option)),
@@ -273,7 +234,7 @@ namespace html_class
 		this->_dataLen = _tag.length() + _option.length() + 5;
 	}
 
-	HtmlTag::HtmlTag(std::string tag,std::string option,std::vector<HtmlTag> children):
+	inline HtmlTag::HtmlTag(std::string tag,std::string option,std::vector<HtmlTag> children):
 	_isTag   (true),
 	_tag     (std::move(tag)),
 	_option  (std::move(option)),
@@ -283,61 +244,14 @@ namespace html_class
 		this->_dataLen = _tag.length() + _option.length() + 5;
 	}
 
-	HtmlTag::~HtmlTag() noexcept{
+	inline HtmlTag::~HtmlTag() noexcept{
 		
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	//                                  Members functions
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	void HtmlTag::chained_encord_raw_text(std::string& buff) const noexcept{
-		if(this->_isTag){
-			buff += '<'; 
-			buff += this->_tag;
-			buff += this->_option;
-			buff += '>';
-
-			for(const auto& elem: this->_children){
-				elem.chained_encord_raw_text(buff);
-			}
-
-			buff += "</";
-			buff += this->_tag;
-			buff += '>';
-		}else{
-			buff += this->_option;
-		}
-	}
-
-	std::string HtmlTag::encord_raw_text() const{
-		std::string rawText;
-		rawText.reserve(this->_dataLen);
-
-		if(this->_isTag){
-			rawText += '<'; 
-			rawText += this->_tag;
-			rawText += this->_option;
-			rawText += '>';
-
-			for(const auto& elem: this->_children){
-				elem.chained_encord_raw_text(rawText);
-			}
-
-			rawText += "</";
-			rawText += this->_tag;
-			rawText += '>';
-		}else{
-			rawText += this->_option;
-		}
-
-		
-		return rawText;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//                                  Members operands
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	HtmlTag& HtmlTag::operator=(const HtmlTag& other){
+	inline HtmlTag& HtmlTag::operator=(const HtmlTag& other){
 		_isTag    = other._isTag;
 		_tag      = other._tag;
 		_option   = other._option;
@@ -347,7 +261,7 @@ namespace html_class
 		return * this;
 	}
 
-	HtmlTag& HtmlTag::operator=(HtmlTag&& other) noexcept{
+	inline HtmlTag& HtmlTag::operator=(HtmlTag&& other) noexcept{
 		_isTag    = std::move(other._isTag);
 		_tag      = std::move(other._tag);
 		_option   = std::move(other._option);

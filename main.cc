@@ -12,7 +12,7 @@ int main() {
 	auto tmp = HtmlTag("h","data",
 		HtmlTag("Hello")+
 		HTML_TAG_FOREACH_BEGIN(int i = 0;i < 10;i++){
-			return HtmlTag("OK! " + std::to_string(i));
+			return HtmlTag("OK! \"' <" + std::to_string(i) + ">\n");
 		}
 		HTML_TAG_FOREACH_END
 	);
