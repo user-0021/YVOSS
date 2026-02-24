@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/cheerp/include",
+                "/opt/cheerp/include/client",
+                "/usr/local/include",
+                "/usr/include/jsoncpp"
+            ],
+            "defines": [],
+            "compilerPath": "/opt/cheerp/bin/clang++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
